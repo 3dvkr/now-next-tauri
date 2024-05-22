@@ -1,0 +1,16 @@
+{
+  "name": "now-next-tauri",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1"
+  },
+  "dependencies": {
+    "@tauri-apps/plugin-store": "2.0.0-beta.3",
+    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v1"
+  }
+}

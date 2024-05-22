@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tauri App</title>
+  <script type="module" src="/js/main.js" defer></script>
+</head>
+
+<body>
+  <main id="main">
+    <h1>Now and Next</h1>
+    <form action="">
+      <label for="new-item">New Item</label>
+      <input type="text" id="new-item" name="new-item">
+      <button id="add-item-btn" type="submit">Add</button>
+      <button id="clear-items" type="button">Clear All</button>
+    </form>
+    <div class="dropzone" id="now">
+      <h2>Now</h2>
+    </div>
+    <div class="dropzone" id="next">
+      <h2>Next</h2>
+    </div>
+    <div class="dropzone" id="today">
+      <h2>Today</h2>
+    </div>
+    <div class="dropzone" id="done">
+      <h2>Done</h2>
+    </div>
+
+    <button popovertarget="summary">Summary</button>
+    <div id="summary" popover anchor="main">Popover content</div>
+
+    <button popovertarget="help-menu">Help menu</button>
+    <div id="help-menu" popover anchor="main">Popover help content</div>
+  </main>
+</body>
+
+</html>
