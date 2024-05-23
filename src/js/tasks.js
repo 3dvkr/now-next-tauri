@@ -1,7 +1,9 @@
-import { dragstartHandler } from './dropzone.js'
 import {
-    dropzones
+    dropzones,
+    dragstartHandler,
+    zoneHasSpace
 } from "./dropzone.js"
+import { addTask, getTasks, getWorkSessions, startWorkSession } from "./tauri.js"
 
 export const createItem = itemHandler()
 
@@ -48,6 +50,10 @@ function itemHandler() {
             }
         })
         document.getElementById(zoneId).appendChild(newItem)
+        addTask(count, str)
+        getTasks() //comment
+        startWorkSession(count, false)
+        getWorkSessions() // comment
     }
 }
 

@@ -6,11 +6,17 @@ import {
   dragoverHandler,
   dropzoneHandler,
 } from "./dropzone.js"
+import { getWorkSessions, getTasks } from "./tauri.js";
 
 const { invoke } = window.__TAURI__.tauri;
 
 const clearBtn = document.getElementById('clear-items')
-clearBtn.addEventListener('click', () => clearItems())
+clearBtn.addEventListener('click', async () => {
+  clearItems()
+  await invoke('clear_all')
+  getWorkSessions()
+  getTasks()
+})
 
 dropzones.forEach((zone) => {
   // make active drop zones
@@ -19,8 +25,6 @@ dropzones.forEach((zone) => {
   zone.addEventListener('dragleave', dragleaveHandler(zone.id))
   zone.addEventListener('dragover', dragoverHandler(zone.id))
 })
-
-
 
 async function calculateDuration(taskId) {
   try {

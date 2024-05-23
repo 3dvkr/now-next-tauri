@@ -40,6 +40,14 @@ impl MyState {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct WorkSessionWithDuration {
+    task_id: usize,
+    task_memo: String,
+    is_active: bool,
+    duration_in_seconds: i64,
+}
+
 // Command to get all tasks
 #[tauri::command]
 fn get_tasks(state: State<'_, MyState>) -> Vec<Task> {
@@ -57,6 +65,34 @@ fn add_task(state: State<'_, MyState>, id: usize, memo: String) {
 #[tauri::command]
 fn get_work_sessions(state: State<'_, MyState>) -> Vec<WorkSession> {
     state.work_sessions.lock().unwrap().clone()
+}
+
+
+#[tauri::command]
+fn get_sessions_duration(state: State<'_, MyState>) -> Result<Vec<WorkSessionWithDuration>, String> {
+    let work_sessions = state.work_sessions.lock().unwrap();
+    let tasks = state.tasks.lock().unwrap();
+    let mut sessions_with_duration = Vec::new();
+
+    for session in work_sessions.iter() {
+        let duration_in_seconds = if let Some(stop_time) = session.stop_time {
+            stop_time.signed_duration_since(session.start_time).num_seconds()
+        } else {
+            // Set duration to 10 minutes (600 seconds) if stop_time is None
+            600
+        };
+
+        if let Some(task) = tasks.iter().find(|t| t.id == session.task_id) {
+            sessions_with_duration.push(WorkSessionWithDuration {
+                task_id: session.task_id,
+                is_active: session.is_active,
+                duration_in_seconds,
+                task_memo: task.memo.clone(),
+            });
+        }
+    }
+
+    Ok(sessions_with_duration)
 }
 
 // Command to add a work session
@@ -87,31 +123,35 @@ fn start_work_session(
 #[tauri::command]
 fn end_work_session(
     state: State<'_, MyState>, 
-    task_id: usize
+    task_id: usize,
+    is_complete: bool
 ) -> Result<(), String> {
     let stop_time = Utc::now();
     let mut work_sessions = state.work_sessions.lock().unwrap();
-    
+
     if let Some(work_session) = work_sessions.iter_mut().find(|ws| ws.task_id == task_id && ws.is_latest) {
         work_session.stop_time = Some(stop_time);
-        work_session.is_latest = false;
-        Ok(())
-    } else {
-        Err(format!("No active work session found for task_id: {}", task_id))
+        work_session.is_latest = is_complete;
     }
+    // No error is thrown if no matching work session is found
+    Ok(())
 }
 
 #[tauri::command]
-fn calculate_duration(state: State<'_, MyState>, task_id: usize) -> Option<i64> {
-    let work_sessions = state.work_sessions.lock().unwrap();
-    if let Some(work_session) = work_sessions.iter().find(|ws| ws.task_id == task_id) {
-        if let Some(stop_time) = work_session.stop_time {
-            let duration = stop_time.signed_duration_since(work_session.start_time);
-            return Some(duration.num_seconds()); // Returns duration in seconds
-        }
-    }
-    None // If no matching session or stop_time is not set
+fn clear_all(state: State<'_, MyState>) -> Result<(), String> {
+    let mut tasks = state.tasks.lock().unwrap();
+    let mut work_sessions = state.work_sessions.lock().unwrap();
+
+    // Clear tasks
+    tasks.clear();
+
+    // Clear work sessions
+    work_sessions.clear();
+
+    Ok(())
 }
+
+
 fn main() {
     tauri::Builder::default()
         .manage(MyState::new())
@@ -121,7 +161,8 @@ fn main() {
             get_work_sessions,
             start_work_session,
             end_work_session,
-            calculate_duration
+            get_sessions_duration,
+            clear_all
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

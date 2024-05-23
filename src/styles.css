@@ -95,8 +95,9 @@ div:last-of-type {
 
 
 [popover] {
-  bottom: 50%;
+  bottom: 0;
   padding: 1em 2em;
+  width: 95%;
 }
 
 #done {

@@ -1,3 +1,5 @@
+import { endWorkSession, getWorkSessions, startWorkSession } from "./tauri.js"
+
 // requires https://tauri.app/v1/api/config/#windowconfig.filedropenabled = false
 export const dropzones = document.querySelectorAll('.dropzone')
 
@@ -8,9 +10,19 @@ export function dropzoneHandler(zoneId) {
         document.getElementById(zoneId).classList.remove('bg-active-dropzone')
         document.getElementById(zoneId).classList.remove('bg-inactive-dropzone')
         const data = ev.dataTransfer.getData('application/my-app')
+        const currTask = document.getElementById(data)
+        const prevZoneId = currTask.parentElement.id
         if (zoneHasSpace(zoneId)) {
-            ev.currentTarget.appendChild(document.getElementById(data))
-        } 
+            ev.currentTarget.appendChild(currTask)
+            if (zoneId === 'done' || prevZoneId !== 'next' || prevZoneId === 'now') {
+                endWorkSession(+data.slice(1), zoneId === 'done')
+            }
+            if (zoneId !== 'next' && zoneId !== 'done' || prevZoneId === 'now') {
+                startWorkSession(+data.slice(1), zoneId === 'now')
+            }
+            getWorkSessions()
+
+        }
     }
 }
 export function dragoverHandler(zoneId) {
