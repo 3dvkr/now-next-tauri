@@ -13,7 +13,7 @@ const { invoke } = window.__TAURI__.tauri;
 const clearBtn = document.getElementById('clear-items')
 clearBtn.addEventListener('click', async () => {
   clearItems()
-  await invoke('clear_all')
+  // await invoke('clear_all')
   getWorkSessions()
   getTasks()
 })
